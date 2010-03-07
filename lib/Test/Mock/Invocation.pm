@@ -24,3 +24,19 @@ has 'parameters' => (
 );
 
 __PACKAGE__->meta->make_immutable;
+
+=head1 ATTRIBUTES
+
+=head2 receiver
+
+B<Required>. The object that the method was invoked on.
+
+=head2 method
+
+B<Required>. The name of the method invoked.
+
+=head2 parameters
+
+All the parameters passed to the method (except $self).
+
+=cut

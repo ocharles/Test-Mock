@@ -51,3 +51,23 @@ method is_satisfied_by (Invocation $invocation)
 }
 
 __PACKAGE__->meta->make_immutable;
+
+=head1 ATTRIBUTES
+
+=head1 receiver : Object
+
+B<Required>. The object that a method should be invoked on.
+
+=head1 method : Str
+
+B<Required>. The name of the method to be invoked.
+
+=head1 parameters : ArrayRef
+
+An array reference of parameter expectations. At the moment this is an
+array reference of how C<@_> should look when the method is
+invoked. In the future, there will be parameter expectation objects
+which can work over multiple paramaters, test out of order (eg, hash
+maps), test patterns, etc.
+
+=cut

@@ -98,3 +98,26 @@ method satisfied
 }
 
 __PACKAGE__->meta->make_immutable;
+
+=head1 METHODS
+
+=head2 mock(Str $class) : Object
+
+Mock the class named C<$class>. The mock object will be C<ISA $class>,
+and will have all the methods that C<$class> does (but obviously
+invoking them doesn't run them).
+
+=head2 expect(Object $receiver, Str $method_name) : Test::Mock::Expectation
+
+Register an expected method call of C<$method_name> on
+C<$receiver>. This will return a C<Test::Mock::Expectation>, which you
+can specialize further with chaining if you need to specify further
+constraints.
+
+=head2 satisfied : Bool
+
+Check through the list of expectations and invocations, and make sure
+that they are consistent. That is, every invocation satisfies some
+sort of expectation in the correct order.
+
+=cut
