@@ -6,6 +6,8 @@ use MooseX::Types::Moose qw( ArrayRef Object Str );
 use Test::Mock::Types qw( Invocation );
 use namespace::autoclean;
 
+use Moose::Meta::Attribute::Custom::Trait::Chained;
+
 use Data::Compare;
 
 has 'receiver' => (
@@ -23,12 +25,13 @@ has 'method' => (
 has 'parameters' => (
     is        => 'rw',
     isa       => ArrayRef,
-    traits    => [ 'Array' ],
+    traits    => [ 'Array', 'Chained' ],
     predicate => 'has_parameter_expectaions'
 );
 
 has 'return' => (
-    is => 'rw'
+    is     => 'rw',
+    traits => [ 'Chained' ]
 );
 
 method is_satisfied_by (Invocation $invocation)
