@@ -51,13 +51,13 @@ sub mocks_mock_class : Test(2)
     ok $mock->isa('ToMock');
 }
 
-sub call_with_no_expectation : Test
+sub call_with_no_expectation : Test(2)
 {
     my $test = shift;
     my $context = $test->{context};
     my $mock = $test->{mock};
 
-    $mock->explode;
+    dies_ok { $mock->explode };
 
     ok !$context->satisfied;
 }

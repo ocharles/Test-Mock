@@ -7,6 +7,7 @@ use MooseX::Types::Structured qw( Map Tuple );
 use Test::Mock::Types qw( Expectation Invocation );
 use namespace::autoclean;
 
+use Carp;
 use List::MoreUtils qw( zip );
 use Moose::Meta::Class;
 use Class::MOP::Method;
@@ -51,12 +52,18 @@ method mock (Str $class)
 
 method invoke (Object $receiver, Str $method, @parameters)
 {
+    my @expectations = @{ $self->expectations->{$receiver} || [] };
+
     $self->_add_invocation(
         Test::Mock::Invocation->new(
             receiver   => $receiver,
             method     => $method,
             parameters => \@parameters
         ));
+
+    if (@expectations == 0) {
+        croak "$method was invoked but not expected";
+    }
 }
 
 method should_mock (Str $method_name)
@@ -87,9 +94,7 @@ method satisfied
     }
 
     my @remaining_expectations = map { @{$_} } values %{ $self->expectations };
-
-    return 0 if @remaining_expectations;
-    return 1;
+    return @remaining_expectations == 0;
 }
 
 __PACKAGE__->meta->make_immutable;
