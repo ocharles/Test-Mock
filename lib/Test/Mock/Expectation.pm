@@ -75,4 +75,8 @@ invoked. In the future, there will be parameter expectation objects
 which can work over multiple paramaters, test out of order (eg, hash
 maps), test patterns, etc.
 
+=head1 return : Any
+
+Data to return when this expectation is called.
+
 =cut
