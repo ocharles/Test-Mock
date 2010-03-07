@@ -3,16 +3,17 @@ use Moose;
 use MooseX::Method::Signatures;
 use MooseX::Types::Moose qw( ArrayRef Object Str );
 use MooseX::Types::Structured qw( Tuple );
+use Test::Mock::Types qw( Expectation );
 use namespace::autoclean;
 
 use List::MoreUtils qw( zip );
-
 use Moose::Meta::Class;
 use Class::MOP::Method;
+use Test::Mock::Expectation;
 
 has 'expecations' => (
     is      => 'ro',
-    isa     => ArrayRef[Tuple[Object, Str]],
+    isa     => ArrayRef[Expectation],
     traits  => [ 'Array' ],
     default => sub { [] },
     handles => {
@@ -57,7 +58,11 @@ method should_mock (Str $method_name)
 
 method expect (Object $mock, Str $method_name)
 {
-    $self->_add_expecatation([ $mock, $method_name ]);
+    $self->_add_expecatation(
+        Test::Mock::Expectation->new(
+            receiver => $mock,
+            method   => $method_name
+        ));
 }
 
 method satisfied
@@ -70,7 +75,7 @@ method satisfied
         my $expected = shift @expect;
         my $actual   = shift @actual;
 
-        if ($expected->[0] == $actual->[0] && $expected->[1] ne $actual->[1]) {
+        if ($expected->receiver == $actual->[0] && $expected->method ne $actual->[1]) {
             return;
         }
     }
