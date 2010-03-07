@@ -1,4 +1,5 @@
 package Test::Mock::Context;
+# ABSTRACT: The mocking context which oversees the mocking process
 use Moose;
 use MooseX::Method::Signatures;
 use MooseX::Types::Moose qw( ArrayRef Object Str );

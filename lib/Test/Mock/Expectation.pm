@@ -1,4 +1,5 @@
 package Test::Mock::Expectation;
+# ABSTRACT: Represents an expected invocation of a method
 use Moose;
 use MooseX::Method::Signatures;
 use MooseX::Types::Moose qw( ArrayRef Object Str );
