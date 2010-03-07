@@ -85,12 +85,11 @@ method satisfied
         my $expected = shift @expect;
         my $actual   = shift @actual;
 
-        if ($expected->receiver == $actual->receiver && $expected->method ne $actual->method) {
-            return;
-        }
+        $expected->is_satisfied_by($actual)
+            or return 0;
     }
 
-    return if @expect != @actual;
+    return 0 if @expect != @actual;
     return 1;
 }
 
