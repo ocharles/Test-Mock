@@ -2,5 +2,6 @@
 
 use lib 't';
 use Tests::Mock;
+use Tests::EG::PublisherSubscriber;
 
 Test::Class->runtests;
