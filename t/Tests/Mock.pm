@@ -10,9 +10,9 @@ use aliased 'Test::Mock::Context' => 'MockContext';
     package ToMock;
     use Moose;
 
-    sub explode
-    {
-    }
+    sub explode { }
+    sub defuse  { }
+    sub tick    { }
 }
 
 sub startup : Tests(setup => 1)
@@ -60,6 +60,23 @@ sub call_with_no_expectation : Test
     $mock->explode;
 
     ok !$context->satisfied;
+}
+
+sub multiple_expecations : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'tick');
+    $context->expect($mock, 'defuse');
+    $context->expect($mock, 'explode');
+
+    $mock->tick;
+    $mock->defuse;
+    $mock->explode;
+
+    ok $context->satisfied;
 }
 
 1;
