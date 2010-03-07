@@ -3,7 +3,7 @@ package Test::Mock::Context;
 use Moose;
 use MooseX::Method::Signatures;
 use MooseX::Types::Moose qw( ArrayRef Object Str );
-use MooseX::Types::Structured qw( Tuple );
+use MooseX::Types::Structured qw( Map Tuple );
 use Test::Mock::Types qw( Expectation Invocation );
 use namespace::autoclean;
 
@@ -13,14 +13,10 @@ use Class::MOP::Method;
 use Test::Mock::Expectation;
 use Test::Mock::Invocation;
 
-has 'expecations' => (
+has 'expectations' => (
     is      => 'ro',
-    isa     => ArrayRef[Expectation],
-    traits  => [ 'Array' ],
-    default => sub { [] },
-    handles => {
-        _add_expecatation => 'push'
-    }
+    isa     => Map[Object, ArrayRef[Expectation]],
+    default => sub { {} },
 );
 
 has 'run_log' => (
@@ -74,20 +70,17 @@ method expect (Object $mock, Str $method_name)
         receiver => $mock,
         method   => $method_name
     );
-    $self->_add_expecatation($expectation);
+    $self->expectations->{$mock} ||= [];
+    push @{ $self->expectations->{$mock} }, $expectation;
 
     return $expectation;
 }
 
 method satisfied
 {
-    my @expect = @{ $self->expecations };
-    my @actual = @{ $self->run_log };
-
-    while (@expect && @actual)
-    {
-        my $expected = shift @expect;
-        my $actual   = shift @actual;
+    for my $actual (@{ $self->run_log }) {
+        my $expected = shift @{ $self->expectations->{ $actual->receiver } };
+        return 0 if !defined $expected;
 
         $expected->is_satisfied_by($actual)
             or return 0;
