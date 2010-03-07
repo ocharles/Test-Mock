@@ -41,4 +41,14 @@ sub single_expectation : Test
     ok $context->satisfied;
 }
 
+sub mocks_mock_class : Test(2)
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    isnt ref $mock, 'ToMock';
+    ok $mock->isa('ToMock');
+}
+
 1;
