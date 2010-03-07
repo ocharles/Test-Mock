@@ -79,4 +79,21 @@ sub multiple_expecations : Test
     ok $context->satisfied;
 }
 
+sub expectation_order : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'tick');
+    $context->expect($mock, 'defuse');
+    $context->expect($mock, 'explode');
+
+    $mock->explode;
+    $mock->tick;
+    $mock->defuse;
+
+    ok !$context->satisfied;
+}
+
 1;
