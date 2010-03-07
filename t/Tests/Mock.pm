@@ -15,7 +15,7 @@ use aliased 'Test::Mock::Context' => 'MockContext';
     }
 }
 
-sub startup : Tests(startup => 1)
+sub startup : Tests(setup => 1)
 {
     my $test = shift;
     $test->{context} = MockContext->new;
@@ -49,6 +49,17 @@ sub mocks_mock_class : Test(2)
 
     isnt ref $mock, 'ToMock';
     ok $mock->isa('ToMock');
+}
+
+sub call_with_no_expectation : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $mock->explode;
+
+    ok !$context->satisfied;
 }
 
 1;
