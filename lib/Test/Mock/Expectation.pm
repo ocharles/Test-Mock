@@ -27,10 +27,15 @@ has 'parameters' => (
     predicate => 'has_parameter_expectaions'
 );
 
+has 'return' => (
+    is => 'rw'
+);
+
 method is_satisfied_by (Invocation $invocation)
 {
     return 0 if $self->receiver != $invocation->receiver;
     return 0 if $self->method ne $invocation->method;
+
     if ($self->has_parameter_expectaions) {
         return 0 unless $invocation->has_parameters;
 

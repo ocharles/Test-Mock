@@ -90,7 +90,7 @@ sub multiple_expecations : Test
     ok $context->satisfied;
 }
 
-sub expectation_order : Test
+sub expectation_order : Test(2)
 {
     my $test = shift;
     my $context = $test->{context};
@@ -100,9 +100,11 @@ sub expectation_order : Test
     $context->expect($mock, 'defuse');
     $context->expect($mock, 'explode');
 
-    $mock->explode;
-    $mock->tick;
-    $mock->defuse;
+    dies_ok {
+        $mock->explode;
+        $mock->tick;
+        $mock->defuse;
+    }, qr/Expected tick, actually got explode/;
 
     ok !$context->satisfied;
 }
@@ -120,7 +122,7 @@ sub verifies_parameters : Test
     ok $context->satisfied;
 }
 
-sub verifies_invalid_parameters : Test
+sub verifies_invalid_parameters : Test(2)
 {
     my $test = shift;
     my $context = $test->{context};
@@ -128,9 +130,23 @@ sub verifies_invalid_parameters : Test
 
     $context->expect($mock, 'tick')->parameters([ 5 ]);
 
-    $mock->tick(10);
+    dies_ok { $mock->tick(10) };
 
     ok !$context->satisfied;
+}
+
+sub can_return_data : Test(2)
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'defuse')->return('red wire');
+
+    my $wire_cut = $mock->defuse();
+
+    ok $context->satisfied;
+    is $wire_cut, 'red wire';
 }
 
 1;

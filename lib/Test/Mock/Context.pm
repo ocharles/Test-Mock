@@ -7,7 +7,7 @@ use MooseX::Types::Structured qw( Map Tuple );
 use Test::Mock::Types qw( Expectation Invocation );
 use namespace::autoclean;
 
-use Carp;
+use Carp qw( confess );
 use List::MoreUtils qw( zip );
 use Moose::Meta::Class;
 use Class::MOP::Method;
@@ -28,6 +28,12 @@ has 'run_log' => (
     handles => {
         _add_invocation => 'push'
     }
+);
+
+has 'sat' => (
+    isa     => 'Bool',
+    is      => 'rw',
+    default => 1,
 );
 
 method mock (Str $class)
@@ -54,16 +60,21 @@ method invoke (Object $receiver, Str $method, @parameters)
 {
     my @expectations = @{ $self->expectations->{$receiver} || [] };
 
-    $self->_add_invocation(
-        Test::Mock::Invocation->new(
-            receiver   => $receiver,
-            method     => $method,
-            parameters => \@parameters
-        ));
+    my $invocation = Test::Mock::Invocation->new(
+        receiver   => $receiver,
+        method     => $method,
+        parameters => \@parameters
+    );
 
-    if (@expectations == 0) {
-        croak "$method was invoked but not expected";
+    $self->_add_invocation($invocation);
+
+    my $expectation = shift @{ $self->expectations->{$receiver} };
+    if (!defined $expectation || !$expectation->is_satisfied_by($invocation)) {
+        $self->sat(0);
+        confess"$method was invoked but not expected";
     }
+
+    return $expectation->return;
 }
 
 method should_mock (Str $method_name)
@@ -85,16 +96,8 @@ method expect (Object $mock, Str $method_name)
 
 method satisfied
 {
-    for my $actual (@{ $self->run_log }) {
-        my $expected = shift @{ $self->expectations->{ $actual->receiver } };
-        return 0 if !defined $expected;
-
-        $expected->is_satisfied_by($actual)
-            or return 0;
-    }
-
     my @remaining_expectations = map { @{$_} } values %{ $self->expectations };
-    return @remaining_expectations == 0;
+    return $self->sat && @remaining_expectations == 0;
 }
 
 __PACKAGE__->meta->make_immutable;
