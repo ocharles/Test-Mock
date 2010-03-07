@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base 'Test::Class';
 use Test::Class::Most;
+use Test::Moose;
 
 use aliased 'Test::Mock::Context' => 'MockContext';
 
@@ -15,11 +16,19 @@ use aliased 'Test::Mock::Context' => 'MockContext';
     sub tick    { }
 }
 
+{
+    package ToMock::Role;
+    use Moose::Role;
+
+    sub dance { }
+}
+
 sub startup : Tests(setup => 1)
 {
     my $test = shift;
     $test->{context} = MockContext->new;
     $test->{mock}    = $test->{context}->mock('ToMock');
+    $test->{role}    = $test->{context}->mock('ToMock::Role');
 }
 
 sub replay_nothing : Test
@@ -147,6 +156,20 @@ sub can_return_data : Test(2)
 
     ok $context->satisfied;
     is $wire_cut, 'red wire';
+}
+
+sub can_mock_roles : Test(2)
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{role};
+
+    $context->expect($mock, 'dance');
+
+    $mock->dance;
+
+    does_ok $mock, 'ToMock::Role';
+    ok $context->satisfied;
 }
 
 1;

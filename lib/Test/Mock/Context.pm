@@ -39,9 +39,22 @@ has 'sat' => (
 method mock (Str $class)
 {
     my $package = $class . '::Mock';
+
+    my (@superclasses, @roles, @methods);
+    if (my $meta = Class::MOP::Class->initialize($class)) {
+        if ($meta->isa('Moose::Meta::Role')) {
+            @methods = $class->meta->get_method_list;
+            @roles = $class;
+        }
+        else {
+            @superclasses = ($class);
+            @methods = $class->meta->get_all_method_names;
+        }
+    }
+
     my $mock = Moose::Meta::Class->create(
         $package => (
-            superclasses => [ $class, $class->meta->superclasses ],
+            superclasses => [ @superclasses ],
             methods      => {
                 map {
                     my $method = $_;
@@ -49,8 +62,9 @@ method mock (Str $class)
                         my $mock = shift;
                         $self->invoke($mock, $method, @_);
                     }
-                } grep { $self->should_mock($_) } $class->meta->get_all_method_names
-            }
+                } grep { $self->should_mock($_) } @methods
+            },
+            @roles ? (roles => [ @roles ]) : ()
         ));
 
     return $mock->new_object;
