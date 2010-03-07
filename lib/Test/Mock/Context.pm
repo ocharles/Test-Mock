@@ -86,7 +86,9 @@ method satisfied
             or return 0;
     }
 
-    return 0 if @expect != @actual;
+    my @remaining_expectations = map { @{$_} } values %{ $self->expectations };
+
+    return 0 if @remaining_expectations;
     return 1;
 }
 

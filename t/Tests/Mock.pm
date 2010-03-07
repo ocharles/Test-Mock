@@ -62,6 +62,17 @@ sub call_with_no_expectation : Test
     ok !$context->satisfied;
 }
 
+sub expectation_with_no_call : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'explode');
+
+    ok !$context->satisfied;
+}
+
 sub multiple_expecations : Test
 {
     my $test = shift;
