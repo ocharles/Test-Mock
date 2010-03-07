@@ -1,9 +1,17 @@
 package Test::Mock::Context;
 use Moose;
+use MooseX::Method::Signatures;
 use namespace::autoclean;
 
-sub mock
+method mock (Str $class)
 {
+    return $class->new;
+}
+
+
+sub expect
+{
+
 }
 
 sub satisfied
