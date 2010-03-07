@@ -96,4 +96,30 @@ sub expectation_order : Test
     ok !$context->satisfied;
 }
 
+sub verifies_parameters : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'tick')->parameters([ 5 ]);
+
+    $mock->tick(5);
+
+    ok $context->satisfied;
+}
+
+sub verifies_invalid_parameters : Test
+{
+    my $test = shift;
+    my $context = $test->{context};
+    my $mock = $test->{mock};
+
+    $context->expect($mock, 'tick')->parameters([ 5 ]);
+
+    $mock->tick(10);
+
+    ok !$context->satisfied;
+}
+
 1;

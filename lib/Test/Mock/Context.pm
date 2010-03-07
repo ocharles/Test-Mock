@@ -43,7 +43,7 @@ method mock (Str $class)
                     my $method = $_;
                     $method => sub {
                         my $mock = shift;
-                        $self->invoke($mock, $method);
+                        $self->invoke($mock, $method, @_);
                     }
                 } grep { $self->should_mock($_) } $class->meta->get_all_method_names
             }
@@ -52,12 +52,13 @@ method mock (Str $class)
     return $mock->new_object;
 }
 
-method invoke (Object $receiver, Str $method)
+method invoke (Object $receiver, Str $method, @parameters)
 {
     $self->_add_invocation(
         Test::Mock::Invocation->new(
-            receiver => $receiver,
-            method   => $method
+            receiver   => $receiver,
+            method     => $method,
+            parameters => \@parameters
         ));
 }
 
@@ -68,11 +69,13 @@ method should_mock (Str $method_name)
 
 method expect (Object $mock, Str $method_name)
 {
-    $self->_add_expecatation(
-        Test::Mock::Expectation->new(
-            receiver => $mock,
-            method   => $method_name
-        ));
+    my $expectation = Test::Mock::Expectation->new(
+        receiver => $mock,
+        method   => $method_name
+    );
+    $self->_add_expecatation($expectation);
+
+    return $expectation;
 }
 
 method satisfied
