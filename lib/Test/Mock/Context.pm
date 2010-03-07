@@ -3,13 +3,14 @@ use Moose;
 use MooseX::Method::Signatures;
 use MooseX::Types::Moose qw( ArrayRef Object Str );
 use MooseX::Types::Structured qw( Tuple );
-use Test::Mock::Types qw( Expectation );
+use Test::Mock::Types qw( Expectation Invocation );
 use namespace::autoclean;
 
 use List::MoreUtils qw( zip );
 use Moose::Meta::Class;
 use Class::MOP::Method;
 use Test::Mock::Expectation;
+use Test::Mock::Invocation;
 
 has 'expecations' => (
     is      => 'ro',
@@ -23,7 +24,7 @@ has 'expecations' => (
 
 has 'run_log' => (
     is      => 'ro',
-    isa     => ArrayRef[Tuple[Object, Str]],
+    isa     => ArrayRef[Invocation],
     traits  => [ 'Array' ],
     default => sub { [] },
     handles => {
@@ -42,13 +43,22 @@ method mock (Str $class)
                     my $method = $_;
                     $method => sub {
                         my $mock = shift;
-                        $self->_add_invocation([ $mock, $method ]);
+                        $self->invoke($mock, $method);
                     }
                 } grep { $self->should_mock($_) } $class->meta->get_all_method_names
             }
         ));
 
     return $mock->new_object;
+}
+
+method invoke (Object $receiver, Str $method)
+{
+    $self->_add_invocation(
+        Test::Mock::Invocation->new(
+            receiver => $receiver,
+            method   => $method
+        ));
 }
 
 method should_mock (Str $method_name)
@@ -75,7 +85,7 @@ method satisfied
         my $expected = shift @expect;
         my $actual   = shift @actual;
 
-        if ($expected->receiver == $actual->[0] && $expected->method ne $actual->[1]) {
+        if ($expected->receiver == $actual->receiver && $expected->method ne $actual->method) {
             return;
         }
     }
