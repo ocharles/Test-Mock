@@ -69,6 +69,11 @@ method mock (Str $class)
             @roles ? (roles => [ @roles ]) : ()
         ));
 
+    # Make all attributes not-required, and remove delegation (we've already stubbed the methods)
+    for my $attribute ($mock->get_all_attributes) {
+        $mock->add_attribute($attribute->clone(required => 0, handles => {}))
+    }
+
     return $mock->new_object;
 }
 
